@@ -1,0 +1,121 @@
+﻿@model MediKal.Models.PrescriptionViewModel
+    @using MediKal.Models
+@{
+    Layout = "~/Views/Shared/_PrintLayout.cshtml";
+}
+<style>
+    td{
+        padding:15px;
+    }
+</style>
+
+<button class="green-btn float-right" onclick="window.print()"><i class="fa fa-print"></i> Print</button>
+<br />
+<div>
+    <h4>Prescription</h4>
+    <hr />
+    <br />
+    <div id="details">
+        <div id="prescriptionDetails">
+            <p>
+                <b>@Html.DisplayName("Prescription date:")</b>
+                @Html.DisplayFor(model => model.prescription.PrescriptionDate)
+            </p>
+            <p>
+                <b>By: </b>@($"DR. {Model.prescription.GetDoctor().UserName}")
+            </p>
+            <p>
+                <b>@Html.DisplayName("Employee license num:")</b>
+                @Html.DisplayFor(model => model.prescription.GetDoctor().LicenseNum)
+            </p>
+        </div>
+        <hr />
+        <div>
+            <table>
+                <tr>
+                    <td>
+                        <b>@Html.DisplayName("Full Name:")</b>
+                        @Html.DisplayFor(model => model.prescription.GetPatient().UserName)
+                    </td>
+                    <td>
+                        <b>@Html.DisplayName("ID: ")</b>
+                        @Html.DisplayFor(model => model.prescription.GetPatient().Id)
+                    </td>
+                    <td>
+                        <b>@Html.DisplayName("Age: ")</b>
+                        @Html.Label(Model.prescription.GetPatient().GetAge().ToString())
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <b>@Html.DisplayName("Phone: ")</b>
+                        @Html.DisplayFor(model => model.prescription.GetPatient().Phone)
+                    </td>
+                    <td>
+                        <b>@Html.DisplayName("Mail: ")</b>
+                        @Html.DisplayFor(model => model.prescription.GetPatient().Mail)
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <hr />
+        <table>
+            <tr>
+                <td>
+                    <b>@Html.DisplayName("Generic Name:")</b>
+                    @Html.DisplayFor(model => model.prescription.GetMedicine().GenericName)
+                </td>
+
+                <td>
+                    <b>@Html.DisplayName("Name:")</b>
+                    @Html.DisplayFor(model => model.prescription.GetMedicine().Name)
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <b>@Html.DisplayName("Serving Option:")</b>
+                    @Html.DisplayFor(model => model.prescription.GetMedicine().ServingOption)
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <b>@Html.DisplayName("Frequency: ")</b>
+                    @Html.DisplayFor(model => model.NumOfTimes) times in a @Html.DisplayFor(model => model.Frequency)
+
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <br />
+                    <b>Start date: </b> @Html.Label(Model.StartTime.ToShortDateString())
+                </td>
+                <td>
+                    <br />
+                    <b>End date: </b>@Html.Label(Model.EndTime.ToShortDateString())
+                </td>
+            </tr>
+
+        </table>
+        <hr />
+        <br />
+        <b>@Html.DisplayNameFor(model=>model.Comments)</b>
+        <br />
+        @Html.DisplayFor(model => model.Comments)
+
+        <br />
+        <br />
+        <br />
+        <br />
+        <br />
+        <br />
+        <br />
+        <br />
+        <br />
+        <br />
+        <hr />
+        <br />
+        <br />
+        <p>Doctor's signature:___________________________________________</p>
+    </div>
+</div>
+<iframe name="print_frame" width="0" height="0" frameborder="0" src="about:blank"></iframe>

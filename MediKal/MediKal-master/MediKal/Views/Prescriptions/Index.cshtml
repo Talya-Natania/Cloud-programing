@@ -1,0 +1,76 @@
+﻿@model IEnumerable<MediKal.Models.PrescriptionViewModel>
+@using MediKal.Models
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_ManagementLayout.cshtml";
+    int? id = null;
+}
+    <div class="m-5 p-3">
+        @if (RouteConfig.user.UserType == BE.UserTypeEnum.Doctor)
+        {
+            <img src="~/images/prescription.png" height="100" width="100" />
+        <a href="~/Prescriptions/ChoosePatient" class="social-button">
+            <span class="fa fa-lg fa-plus"></span>
+        </a>
+        }
+        <h2 style="display:inline;margin-left:90px;">Prescriptions <span class="badge badge-pill bg-green">@Model.Count()</span></h2>
+    </div>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayName("Patient")
+        </th>
+        <th>
+            @Html.DisplayName("Doctor")
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Frequency)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.StartTime)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.EndTime)
+        </th>
+        <th>
+            @Html.DisplayName("Medicine")
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Comments)
+        </th>
+        <th></th>
+        <th></th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.prescription.GetPatient().UserName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.prescription.GetDoctor().UserName)
+            </td>
+            <td>
+                @item.NumOfTimes times in a @item.Frequency
+            </td>
+            <td>
+                @item.StartTime.ToShortDateString()
+            </td>
+            <td>
+                @item.EndTime.ToShortDateString()
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.prescription.GetMedicine().Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Comments)
+            </td>
+            <td>
+                <a class="blue-btn m-1" href='@($"/Prescriptions/PdfViewer/{id = item.prescription.Id}")'><i class="fa fa-print"></i></a>
+            </td>
+            <td></td>
+        </tr>
+    }
+
+</table>

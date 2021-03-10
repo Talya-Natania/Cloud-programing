@@ -1,0 +1,210 @@
+﻿@using MediKal.Models
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_ManagementLayout.cshtml";
+}
+<head>
+    <title>Line Chart</title>
+    <script async="" src="//www.google-analytics.com/analytics.js"></script>
+    <script src="https://www.chartjs.org/dist/2.9.3/Chart.min.js"></script>
+    <script src="https://www.chartjs.org/samples/latest/utils.js"></script>
+    <style>
+        canvas {
+            -moz-user-select: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+        }
+    </style>
+
+    <meta name="NetsparkQuiltingResult" total-length="4007" removed="0" rules-found="w2341,w2719,w3949,w3116,w5202">
+    <style type="text/css">
+        /* Chart.js */
+        @@keyframes chartjs-render-animation {
+            from {
+                opacity: .99
+            }
+
+            to {
+                opacity: 1
+            }
+        }
+
+        .chartjs-render-monitor {
+            animation: chartjs-render-animation 1ms
+        }
+
+        .chartjs-size-monitor, .chartjs-size-monitor-expand, .chartjs-size-monitor-shrink {
+            position: absolute;
+            direction: ltr;
+            left: 0;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            overflow: hidden;
+            pointer-events: none;
+            visibility: hidden;
+            z-index: -1
+        }
+
+            .chartjs-size-monitor-expand > div {
+                position: absolute;
+                width: 1000000px;
+                height: 1000000px;
+                left: 0;
+                top: 0
+            }
+
+            .chartjs-size-monitor-shrink > div {
+                position: absolute;
+                width: 200%;
+                height: 200%;
+                left: 0;
+                top: 0
+            }
+    </style>
+</head>
+<div class="m-3 p-5">
+    <div id="filters" class="text-left">
+        <!-- Button trigger modal -->
+        <h1>
+            Statistics
+        </h1>
+    </div>
+
+    <form id="filtersForm">
+        <div class="row m-3">
+            <div class="m-3">
+                <b>@Html.DisplayName("Start:")</b>
+                <input name="start" id="start" type="date" />
+            </div>
+            <div class="m-3">
+                <b>@Html.DisplayName("end:")</b>
+                <input name="end" id="end" type="date" />
+            </div>
+            <div class="col m-4">
+                <b>@Html.DisplayName("Generic Name:")</b>
+                <br />
+                <br />
+                @Html.DropDownEnumListForMedicines("medicineId")
+            </div>
+
+        </div>
+    </form>
+       
+    <label id="status" class="loading-label"></label>
+
+    <div id="data-table-chart.js">
+        <div>
+            <div class="chartjs-size-monitor"><div class="chartjs-size-monitor-expand"><div class=""></div></div><div class="chartjs-size-monitor-shrink"><div class=""></div></div></div>
+            <canvas id="canvas" style="display: block; height: 312px; width: 625px;" width="937" height="468" class="chartjs-render-monitor"></canvas>
+        </div>
+        <br>
+        <br>
+    </div>
+</div>
+
+
+<script type="text/javascript" language="javascript">
+    $(document).on('change', 'select', function () {
+        getJson();
+    });
+    $("#start").on("change", function () {
+        getJson();
+    });
+    $("#end").on("change", function () {
+        getJson();
+    });
+
+    function getJson() {
+
+        $("#status").text("Loading...");
+        var id = $("#medicines").find(":selected").val();
+        var start_date = $("#start").val();
+        var end_date = $("#end").val();
+        $.ajax({
+            url: '@Url.Action("GetStatisticsByJson", "Statistics")',
+            data: {
+                medicineId: id,
+                start: start_date,
+                end: end_date
+            },
+            success: BindChart
+        });
+    }
+
+    function BindChart(data) {
+        $("#status").text("");
+        var my_data = [];
+        var my_month = [];
+        for (i = 0; i < data.length; i++) {
+            my_data[i] = data[i].Count;
+            my_month[i] = data[i].Month;
+        }
+        var medicine_name = $("#medicines").find(":selected").text();
+        createChart(my_data, my_month, medicine_name);
+    };
+
+
+</script>
+
+<script>
+
+    function createChart(my_data, my_month, medicine) {
+        try {
+            window.myLine.destroy();
+            window.myLine.update();
+        }
+        catch{ }
+        finally {
+
+            var config = {
+                type: 'line',
+                data: {
+                    labels: my_month,
+                    datasets: [{
+                        label: medicine,
+                        backgroundColor: '#00d6c8',
+                        borderColor: '#00d6c8',
+                        data: my_data,
+                        fill: false,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    title: {
+                        display: true,
+                        text: ''
+                    },
+                    tooltips: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    hover: {
+                        mode: 'nearest',
+                        intersect: true
+                    },
+                    scales: {
+                        xAxes: [{
+                            display: true,
+                            scaleLabel: {
+                                display: true,
+                                labelString: 'Month'
+                            }
+                        }],
+                        yAxes: [{
+                            display: true,
+                            scaleLabel: {
+                                display: true,
+                                labelString: 'Value'
+                            }
+                        }]
+                    }
+                }
+            };
+
+            var ctx = document.getElementById('canvas').getContext('2d');
+            window.myLine = new Chart(ctx, config);
+        }
+    }
+
+</script>

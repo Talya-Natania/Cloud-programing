@@ -1,0 +1,218 @@
+@model MediKal.Models.PrescriptionViewModel
+@using MediKal.Models
+@{
+    ViewBag.Title = "View";
+    Layout = "~/Views/Shared/_ManagementLayout.cshtml";
+}
+<style>
+    .loading-label {
+        font-size: large;
+        font-weight: bold;
+        color: #00d6c8;
+        padding:15px;
+    }
+</style>
+<script type="text/javascript" language="javascript">
+    $(document).on('change', 'select', function (e) {
+        $("#status").text("We check for conflicts...");
+        var id = $(this).find(":selected").attr("id");
+        document.getElementById('Name').innerHTML = document.getElementById(id).getAttribute('data-Name');
+        document.getElementById('ServingOption').innerHTML = document.getElementById(id).getAttribute('data-ServingOption');
+        var prescription = $("#prescriptionForm").serialize();
+        var primaryId = 0;
+        primaryId = parseInt($(this).find(":selected").val());
+        $.ajax({
+            type: "POST",
+            url: '@Url.Action("GetWarningsByJson", "Prescriptions")',
+            data: {
+                medicineId: primaryId,
+                patientId: @(Model.PatientId) },
+            success: BindWarnings
+        });
+    });
+    function BindWarnings(warnings) {
+        $("#status").text("");
+        var warningDiv = $("#warningDiv").empty();
+        if (warnings.length > 0) {
+            $("#SaveButton").prop('disabled', true);
+            for (i = 0; i < warnings.length; i++) {
+                var newAlert = "<div class='alert alert-danger' role='alert'>"
+                    + "<button type='button' class='close' data-dismiss='alert' aria-label='Close'><span aria-hidden='true'>&times;</span></button>"
+                    + "<h3><b> Oops we found conflictings </b></h3><hr />"
+                    + "<b> Description </b></br>"
+                    + "<p>" + warnings[i].Description + "</p>"
+                    + "<b> Conflicting medicines </b></br>"
+                    + warnings[i].ConflictingMedicines + "</br></br>"
+                    + "<b> Level of risk </b></br>"
+                    + warnings[i].LevelOfRisk + "</br>"
+                    + "</div>";
+
+                warningDiv.append(newAlert);
+
+            }
+        }
+        else {
+            var newAlert = "<div class='alert alert-success' role='alert'>"
+                + "<button type='button' class='close' data-dismiss='alert' aria-label='Close'><span aria-hidden='true'>&times;</span></button>"
+                + "<b> We didn't find conflictings </b>"
+                + "</div>";
+            warningDiv.append(newAlert);
+            $("#SaveButton").prop('disabled', false);
+
+
+
+
+        }
+    };
+
+</script>
+@using (Html.BeginForm("Create", "Prescriptions"))
+{
+    @Html.AntiForgeryToken()
+
+    @Html.HiddenFor(model => model.DoctorId)
+    @Html.HiddenFor(model => model.PatientId)
+    <style>
+        td {
+            padding: 15px;
+        }
+        input[type=number] {
+            width: 50px;
+            text-align: center;
+            margin: 0px;
+            display: inline;
+            text-align: center;
+        }
+    </style>
+    <br />
+    <div>
+        <h4>New Prescription</h4>
+        <hr />
+        <br />
+        <div id="details">
+            <div id="prescriptionDetails">
+                <p>
+                    <b>@Html.DisplayName("Prescription date:")</b>
+                    @Html.Label("PrescriptionDate", DateTime.Now.ToString())
+                </p>
+                <p>
+                    <b>By: </b>@($"DR. {Model.prescription.GetDoctor().UserName}")
+                </p>
+                <p>
+                    <b>@Html.DisplayName("Employee license num:")</b>
+                    @Html.DisplayFor(model => model.prescription.GetDoctor().LicenseNum)
+                </p>
+            </div>
+            <hr />
+            <div>
+                <table>
+                    <tr>
+                        <td>
+                            <b>@Html.DisplayName("Full Name:")</b>
+                            @Html.DisplayFor(model => model.prescription.GetPatient().UserName)
+                        </td>
+                        <td>
+                            <b>@Html.DisplayName("ID: ")</b>
+                            @Html.DisplayFor(model => model.prescription.GetPatient().Id)
+                        </td>
+                        <td>
+                            <b>@Html.DisplayName("Age: ")</b>
+                            @Html.Label(Model.prescription.GetPatient().GetAge().ToString())
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>@Html.DisplayName("Phone: ")</b>
+                            @Html.DisplayFor(model => model.prescription.GetPatient().Phone)
+                        </td>
+                        <td>
+                            <b>@Html.DisplayName("Mail: ")</b>
+                            @Html.DisplayFor(model => model.prescription.GetPatient().Mail)
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <hr />
+            <form id="medicineForm">
+                <table>
+                    <tr>
+                        <td>
+                            <b>@Html.DisplayName("Generic Name:")</b>
+                            @Html.DropDownEnumListForMedicines("MedicineId")
+                        </td>
+                        <td>
+                            <b>@Html.DisplayName("Name:")</b>
+                            <label id="Name"></label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>@Html.DisplayName("Serving Option:")</b>
+                            <label id="ServingOption"></label>
+                        </td>
+                    </tr>
+                </table>
+                <label id="status" class="loading-label"></label>
+                <div id="warningDiv" class="text-left ">
+                </div>
+                <table>
+                    <tr>
+                        <td>
+                            <b>@Html.DisplayName("Frequency: ")</b>
+                            @Html.EditorFor(model => model.NumOfTimes) times in a @Html.EnumDropDownListFor(model => model.Frequency, new { @class = "frequency-select" })
+                            <br />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <div class="row">
+                                <div class="col">
+                                    <b>Start date: </b>
+                                    <input name="StartTime" value="@DateTime.Now.ToString("yyyy-MM-dd")" type="date" />
+                                </div>
+                                <div class="col">
+                                    <b>End date: </b>
+                                    <input name="EndTime" type="date" />
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </form>
+            <hr />
+            <br />
+            <b>@Html.DisplayNameFor(model => model.Comments)</b>
+            <br />
+            <textarea name="Comments" rows="5" cols="100"></textarea>
+
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <hr />
+            <br />
+            <br />
+            <p>Doctor's signature:___________________________________________</p>
+        </div>
+        <br />
+        <br />
+        <div class="float-right">
+            <input disabled="disabled" type="submit" id="SaveButton" value="Save" class="blue-btn" />
+            <a href="~/Prescriptions/ChoosePatient" class="btn green-btn">Back to List</a>
+        </div>
+
+    </div>
+    <iframe name="print_frame" width="0" height="0" frameborder="0" src="about:blank"></iframe>
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+
+}

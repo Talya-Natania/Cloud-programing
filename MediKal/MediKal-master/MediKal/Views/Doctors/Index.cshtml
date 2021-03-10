@@ -1,0 +1,41 @@
+@model IEnumerable<BE.Doctor>
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_ManagementLayout.cshtml";
+}
+<div>
+    @if (RouteConfig.user.UserType == BE.UserTypeEnum.Manager)
+    { <img src="~/images/add-doctor.png" class="mt-0 pt-0" height="160" />
+    <a href="~/Doctors/create" class="social-button">
+        <span class="fa fa-lg fa-plus"></span>
+    </a>
+    }
+    <h2 style="display:inline;margin-left:90px;">Doctors <span class="badge badge-pill bg-green">@Model.Count()</span></h2>
+</div>
+<hr />
+
+<div class="row">
+    @foreach (var item in Model)
+    {
+        <div class="col-4 text-left">
+            <div class="profile-card text-center shadow">
+
+                <img class="bg-img" src="~/images/green-bg.png">
+                <div class="profile-info">
+                    <i class="profile-pic"><img src="~/images/doctor (2).png" width="50"></i>
+                    <h3 class="hvr-underline-from-center">Dr. @item.UserName</h3>
+                    <p><br /> @item.Specialty</p>
+                    <p><i class="fa fa-phone"></i><br /> @item.Phone</p>
+                    <p><i class="fa fa-envelope-o"></i><br /> @item.Mail</p>
+                    <div onclick="location.href='@($"/Doctors/GetPrescriptionsOfDoctor?Id={item.PrimaryId}")'" class="btn blue-btn"><i class="fa fa-eye"></i> Prescriptions</div>
+                </div>
+
+            </div>
+        </div>
+    }
+</div>
+
+<br />
+<br />
+<br />
